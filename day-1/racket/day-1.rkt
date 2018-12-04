@@ -21,6 +21,13 @@
     (define delta (string->number delta-str))
     (+ freq delta)))
 
+(define (calc-first-nth-freq freq-list n)
+  (for/fold ([freq-table #hasheq()]
+             [current-freq 0]
+             #:break ()
+             #:result current-freq)
+            ([freq (in-list freq-list)])
+    ))
 ; Call the function with our list
 (define final-frequency (calc-final-freq lines))
 
