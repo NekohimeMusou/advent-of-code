@@ -45,5 +45,13 @@ def find_repetition(delta_list, initial_freq=0):
             freqs_tested.add(current_freq)
 
 
+def time():
+    import timeit
+
+    reps = 1000
+    output = timeit.timeit('main()', globals=globals(), number=reps)
+    print(output / reps)
+
+
 if __name__ == "__main__":
     main()
