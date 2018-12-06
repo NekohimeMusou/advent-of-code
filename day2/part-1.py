@@ -1,7 +1,7 @@
 from functools import reduce
 from operator import mul
 
-INPUT_PATH = "../input.txt"
+INPUT_PATH = "input.txt"
 TARGETS = (2, 3)
 
 

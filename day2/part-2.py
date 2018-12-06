@@ -1,6 +1,6 @@
 from itertools import combinations
 
-INPUT_PATH = "../input.txt"
+INPUT_PATH = "input.txt"
 SAMPLE_DATA = ['abcde', 'fghij', 'klmno', 'pqrst', 'fguij', 'axcye', 'wvxyz']
 
 

@@ -1,6 +1,6 @@
 from itertools import cycle
 
-INPUT_PATH = "../input.txt"
+INPUT_PATH = "input.txt"
 
 
 def main():

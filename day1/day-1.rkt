@@ -1,7 +1,7 @@
 #lang racket
 
 ; Name of the input file
-(define INPUT-FILENAME "../input.txt")
+(define INPUT-FILENAME "input.txt")
 
 ; Read each line from an input port into a list
 (define (lines->list input)
