@@ -1,21 +1,20 @@
 from abc import ABC, abstractmethod
-from itertools import chain
 
 
 class SegmentTreeNode(ABC):
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def create_leaf(value):
+    def create_leaf(cls, start, end, value):
         pass
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def merge(left, right):
+    def merge(cls, start, end, left, right):
         pass
 
     @property
     @abstractmethod
-    def value(self):
+    def score(self):
         pass  # This should return something
 
 
@@ -26,48 +25,74 @@ class SegmentTreeNodeWithUpdate(SegmentTreeNode):
 
 
 class ClaimTreeNode(SegmentTreeNodeWithUpdate):
-    def __init__(self, value, start, end, children=None):
-        self._value = value
+    coverage_threshold = 1
+
+    def __init__(self, start, end, coverage, length, children=None, score=None):
+        self._coverage = coverage
+        self.length = length
+        self.children = children
         self.start = start
         self.end = end
-        self.children = children
+
+        if score is None:
+            self._score = self._calc_leaf_score()
+        else:
+            self._score = score
 
     @property
-    def value(self):
-        return self._value
+    def score(self):
+        return self._score
 
-    @staticmethod
-    def create_leaf(value):
+    @property
+    def coverage(self):
+        return self._coverage
+
+    @classmethod
+    def create_leaf(cls, start, end, value):
         """Create a leaf node with the given value
 
-        value - A tuple like (start, end)"""
+        value - (rectangles_covering_leaf, length_of_line_segment)"""
 
-        start, end = value
+        coverage, length = value
 
-        return ClaimTreeNode(0, start, end)
+        return cls(start, end, coverage, length)
 
-    @staticmethod
-    def merge(left, right):
-        """Merge two nodes and return the merged node."""
-        start = min(left.start, right.start)
-        end = max(left.end, right.end)
+    @classmethod
+    def merge(cls, start, end, left, right):
+        """Merge two nodes and return the merged node.
 
-        return ClaimTreeNode(0, start, end, (left, right))
+        Obviously, merged nodes are never leaves"""
 
-    def get_score(self):
-        if self.value > 0:
-            # The node is a leaf and it's covered by a rectangle
-            return self.end - self.start + 1
+        if left.coverage != right.coverage:
+            coverage = 0
+        else:
+            coverage = left.coverage
 
-        if not self.children:
-            # If the node's value is 0 and it's a leaf, it's not covered
-            return 0
+        score = left.score + right.score
 
-        # If it's 0 and there are children, the score is the sum of its children's scores
-        return sum([node.get_score() for node in self.children])
+        return cls(start, end, coverage, left.length+right.length, score=score, children=(left, right))
 
     def update(self, delta):
-        """Adjust the value of this node
+        """Adjust the value of this node.
 
         delta - +1 or -1 to increment/decrement"""
-        self._value += delta
+        self._coverage += delta
+
+        if self.children:
+            for child in self.children:
+                child.update(delta)
+            self._score = self._calc_non_leaf_score()
+        else:
+            self._score = self._calc_leaf_score()
+
+    def _calc_non_leaf_score(self):
+        if self._coverage > 0:
+            return self.length
+        else:
+            return sum([node.score for node in self.children])
+
+    def _calc_leaf_score(self):
+        if self._coverage >= self.coverage_threshold:
+            return self.length
+
+        return 0

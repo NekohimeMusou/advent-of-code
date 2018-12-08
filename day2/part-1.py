@@ -1,5 +1,5 @@
+import operator
 from functools import reduce
-from operator import mul
 
 INPUT_PATH = "input.txt"
 TARGETS = (2, 3)
@@ -19,7 +19,7 @@ def main():
 
     # Multiply the two numbers together to get the checksum
     # I'm only doing it this way because I wrote everything else to support arbitrary targets too
-    checksum = reduce(mul, duplicate_counts)
+    checksum = reduce(operator.mul, duplicate_counts)
 
     print("Checksum:", checksum)
 

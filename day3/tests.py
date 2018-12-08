@@ -1,5 +1,7 @@
 import unittest
 from day3.part_1 import Claim
+from tools.segtree.segmenttree import SegmentTree
+from tools.segtree.segtree_node import ClaimTreeNode
 
 
 class TestPart1(unittest.TestCase):
@@ -21,18 +23,39 @@ class TestPart1(unittest.TestCase):
             for attr in rect_attrs:
                 self.assertEqual(getattr(claim1.rect, attr, None), getattr(claim2.rect, attr, None))
 
-    def test_intersect(self):
-        claim1, claim2, claim3 = [x[1] for x in self.sample]
+    def test_segtree_leaves(self):
+        # TOTAL COVERAGE FOR NOW; WILL ADJUST
+        # Temp variable until I get conversion logic done
+        interval_lengths = ((0, 1), (0, 2), (0, 2), (0, 2), (0, 1))
+        transformations = ((((2, 3, 1),), 4),
+                           (((1, 2, 1),), 6),
+                           (((2, 3, -1), (3, 3, 1)), 6),
+                           (((1, 2, -1), (3, 3, -1)), 0))
+        segtree = SegmentTree(interval_lengths, ClaimTreeNode)
 
-        # Sample claims 1 and 2 should intersect
-        self.assertTrue(claim1.rect.intersects(claim2.rect))
-        self.assertTrue(claim2.rect.intersects(claim1.rect))
+        # A fresh segment tree with nothing covered shouldn't have a score
+        self.assertEqual(segtree.get_score(), 0)
 
-        # Sample claim 3 should NOT intersect either 1 or 2
-        self.assertFalse(claim1.rect.intersects(claim3.rect))
-        self.assertFalse(claim2.rect.intersects(claim3.rect))
-        self.assertFalse(claim3.rect.intersects(claim1.rect))
-        self.assertFalse(claim3.rect.intersects(claim2.rect))
+        for tr_set, expected_result in transformations:
+            for transformation in tr_set:
+                segtree.update(*transformation)
+
+            self.assertEqual(segtree.get_score(), expected_result)
+
+        transformations = ((((2, 3, 1),), 0),
+                           (((1, 2, 1),), 2),
+                           (((2, 3, -1), (3, 3, 1)), 0),
+                           (((1, 2, -1), (3, 3, -1)), 0))
+
+        ClaimTreeNode.coverage_threshold = 2
+
+        segtree = SegmentTree(interval_lengths, ClaimTreeNode)
+
+        self.assertEqual(segtree.get_score(), 0)
+
+        for tr_set, expected_result in transformations:
+            for transformation in tr_set:
+                segtree.update(*transformation)
 
 
 if __name__ == '__main__':
