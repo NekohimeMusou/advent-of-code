@@ -1,4 +1,4 @@
-import re
+from day3.claim import Claim
 
 INPUT_PATH = "input.txt"
 
@@ -17,48 +17,31 @@ def main():
     # When line leaves the right side, decrement the counter
 
 
+def calc_elementary_y_intervals(claims):
+    """Calculate the elementary y-intervals for a list of claims.
+
+    Basically, just get an ordered list of all the unique y-coords."""
+    unique_coords = sorted(list({c.rect.y1 for c in claims} | {c.rect.y2 for c in claims} | {0}))
+
+    if len(unique_coords) % 2:
+        unique_coords.append(max(unique_coords)+1)
+
+    intervals,  prev = [], 0
+    for i in unique_coords:
+        if i == 0:
+            continue
+        intervals.append(i-prev)
+        prev = i
+
+    return tuple(intervals)
+
+
 def get_input(path=INPUT_PATH):
     with open(path) as f:
         lines = [Claim.from_string(line) for line in f]
 
     # Invalid lines (blanks) will be None so filter them out
     return [claim for claim in lines if claim is not None]
-
-
-class Rect:
-    def __init__(self, x1, y1, x2, y2):
-        # Top left coords
-        self.x1 = x1
-        self.y1 = y1
-
-        # Bottom right coords
-        self.x2 = x2
-        self.y2 = y2
-
-    def intersects(self, other):
-        return self.x1 < other.x2 and self.x2 > other.x1 and self.y1 < other.y2 and self.y2 > other.y1
-
-
-class Claim:
-    def __init__(self, claim_id, x1, y1, x2, y2):
-        self.claim_id = claim_id
-
-        self.rect = Rect(x1, y1, x2, y2)
-
-    regex = re.compile(r"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)")
-
-    @classmethod
-    def from_string(cls, s):
-        match = cls.regex.match(s)
-
-        if match:
-            claim_id, x1, y1, w, h = [int(x) for x in match.groups()]
-            x2 = x1 + w
-            y2 = y1 + h
-
-            return Claim(claim_id, x1, y1, x2, y2)
-
-        return None
 
 
 if __name__ == '__main__':
