@@ -3,7 +3,7 @@ from itertools import repeat
 
 from day3.claim_tree_node import ClaimTreeNode
 from day3.claim import Claim
-from day3.part_1 import calc_elementary_y_intervals
+from day3.part_1 import calc_elementary_y_intervals, get_max_x_value
 from tools.segtree import SegmentTree
 
 
@@ -15,6 +15,8 @@ class TestPart1(unittest.TestCase):
             ('#2 @ 3,1: 4x4', Claim(2, 3, 1, 3 + 4, 1 + 4)),
             ('#3 @ 5,5: 2x2', Claim(3, 5, 5, 5 + 2, 5 + 2))
         )
+        y_intervals = zip([(claim.rect.y1, claim.rect.y2) for claim in [x[1] for x in self.sample_input]], )
+        # FIX ABOVE
         self.segtree_intervals = (1, 2, 2, 2, 1)
         # Transition sets with expected scores for both thresholds
         self.trans_threshold_1 = ((((2, 3, 1),), 4),
@@ -25,6 +27,10 @@ class TestPart1(unittest.TestCase):
                                   (((1, 2, 1),), 2),
                                   (((2, 3, -1), (3, 3, 1)), 0),
                                   (((1, 2, -1), (3, 3, -1)), 0))
+
+    def test_elementary_interval_search(self):
+        for pair in self.y_intervals:
+
 
     def test_regex(self):
         rect_attrs = ('x1', 'y1', 'x2', 'y2')
@@ -38,9 +44,6 @@ class TestPart1(unittest.TestCase):
                 self.assertEqual(getattr(claim1.rect, attr, None), getattr(claim2.rect, attr, None))
 
     def test_segtree_leaves(self):
-        # TOTAL COVERAGE FOR NOW; WILL ADJUST
-        # Temp variable until I get conversion logic done
-
         # Set the threshold to 1 for this test
         ClaimTreeNode.coverage_threshold = 1
         segtree = SegmentTree(tuple(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
@@ -69,6 +72,24 @@ class TestPart1(unittest.TestCase):
         claims = [c[1] for c in self.sample_input]
 
         self.assertEqual(calc_elementary_y_intervals(claims), self.segtree_intervals)
+
+    def test_max_x_value(self):
+        claims = [c[1] for c in self.sample_input]
+
+        self.assertEqual(get_max_x_value(claims), 7)
+
+    def test_tree_sweep(self):
+        segtree = SegmentTree(tuple(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
+
+        total_score = 0
+
+        # TODO: Replace with real function
+        for sequence, _ in self.trans_threshold_2:
+            for transformation in sequence:
+                segtree.update(*transformation)
+                total_score += segtree.get_score()
+
+        self.assertEqual(total_score, 4)
 
 
 if __name__ == '__main__':

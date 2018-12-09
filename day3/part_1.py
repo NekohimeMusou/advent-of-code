@@ -44,5 +44,28 @@ def get_input(path=INPUT_PATH):
     return [claim for claim in lines if claim is not None]
 
 
+def get_max_x_value(claim_list):
+    return max({x for pair in {(claim.rect.x1, claim.rect.x2) for claim in claim_list} for x in pair})
+
+
+def find_elementary_intervals(interval_list, y_interval):
+    total = 0
+
+    for i, length in enumerate(interval_list):
+        total += length
+        if total > min(y_interval):
+            start = i
+            break
+
+    total = 0
+    for i, length in enumerate(interval_list):
+        total += length
+        if total >= max(y_interval):
+            end = i
+            break
+
+    return start, end
+
+
 if __name__ == '__main__':
     main()
