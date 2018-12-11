@@ -3,7 +3,8 @@ from itertools import repeat
 
 from day3.claim_tree_node import ClaimTreeNode
 from day3.claim import Claim
-from day3.part_1 import calc_elementary_y_intervals, get_max_x_value, generate_sweep_events
+from day3.part_1 import calc_elementary_y_intervals, generate_sweep_events, calculate_overlap, \
+    find_segtree_interval
 from tools.segtree import SegmentTree
 
 
@@ -16,11 +17,14 @@ class TestPart1(unittest.TestCase):
             ('#3 @ 5,5: 2x2', Claim(3, 5, 5, 5 + 2, 5 + 2))
         )
         self.claims = [c[1] for c in self.sample_input]
-        self.sweep_events = {1: ((3, 7, 1),),
-                             3: ((1, 5, 1),),
-                             5: ((3, 7, -1), (5, 7, 1)),
-                             7: ((1, 5, -1), (5, 7, -1))}
+        self.sweep_events = {1: [(2, 3, 1)],
+                             3: [(1, 2, 1)],
+                             5: [(2, 3, -1), (3, 3, 1)],
+                             7: [(1, 2, -1), (3, 3, -1)]}
         self.segtree_intervals = (1, 2, 2, 2, 1)
+        self.rectangle_y_intervals = (((3, 7), (2, 3)),
+                                      ((1, 5), (1, 2)),
+                                      ((5, 7), (3, 3)))
         # Transition sets with expected scores for both thresholds
         transition_set = (((2, 3, 1),),
                           ((1, 2, 1),),
@@ -38,52 +42,51 @@ class TestPart1(unittest.TestCase):
             self.assertEqual(claim1.claim_id, claim2.claim_id)
 
             for attr in rect_attrs:
-                self.assertEqual(getattr(claim1.rect, attr, None), getattr(claim2.rect, attr, None))
+                self.assertEqual(getattr(claim2.rect, attr, None), getattr(claim1.rect, attr, None))
 
     def test_segtree_leaves(self):
         # Set the threshold to 1 for this test
         ClaimTreeNode.coverage_threshold = 1
-        segtree = SegmentTree(tuple(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
+        segtree = SegmentTree(list(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
 
         # A fresh segment tree with nothing covered shouldn't have a score
-        self.assertEqual(segtree.get_score(), 0)
+        self.assertEqual(0, segtree.get_score())
 
         for tr_set, expected_result in self.trans_threshold_1:
             for transformation in tr_set:
                 segtree.update(*transformation)
 
-            self.assertEqual(segtree.get_score(), expected_result)
+            self.assertEqual(expected_result, segtree.get_score())
 
         # Set the threshold back to 2
         ClaimTreeNode.coverage_threshold = 2
 
         segtree = SegmentTree(tuple(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
 
-        self.assertEqual(segtree.get_score(), 0)
+        self.assertEqual(0, segtree.get_score())
 
         for tr_set, expected_result in self.trans_threshold_2:
             for transformation in tr_set:
                 segtree.update(*transformation)
 
-    def test_y_intervals(self):
-        self.assertEqual(calc_elementary_y_intervals(self.claims), self.segtree_intervals)
+            self.assertEqual(expected_result, segtree.get_score())
 
-    def test_max_x_value(self):
-        self.assertEqual(get_max_x_value(self.claims), 7)
+    def test_y_intervals(self):
+        self.assertEqual(self.segtree_intervals, calc_elementary_y_intervals(self.claims))
 
     def test_sweep_events(self):
-        events = generate_sweep_events(self.claims)
+        events = generate_sweep_events(self.claims, self.segtree_intervals)
 
-        self.assertEqual(events, self.sweep_events)
+        self.assertEqual(self.sweep_events, events)
 
     def test_tree_sweep(self):
-        segtree = SegmentTree(tuple(zip(repeat(0), self.segtree_intervals)), ClaimTreeNode)
+        total_score = calculate_overlap(self.segtree_intervals, self.sweep_events)
 
-        total_score = 0
+        self.assertEqual(4, total_score)
 
-        # TODO: Replace with real function
-
-        self.assertEqual(total_score, 4)
+    def test_rectangle_y_intervals(self):
+        for rect_interval, expected in self.rectangle_y_intervals:
+            self.assertEqual(expected, find_segtree_interval(self.segtree_intervals, rect_interval))
 
 
 if __name__ == '__main__':
