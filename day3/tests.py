@@ -5,6 +5,7 @@ from day3.claim_tree_node import ClaimTreeNode
 from day3.claim import Claim
 from day3.part_1 import calc_elementary_y_intervals, generate_sweep_events, calculate_overlap, \
     find_segtree_interval
+from day3.part_2 import find_non_overlapping_claim
 from tools.segtree import SegmentTree
 
 
@@ -89,6 +90,34 @@ class TestPart1(unittest.TestCase):
     def test_rectangle_y_intervals(self):
         for rect_interval, expected in self.rectangle_y_intervals:
             self.assertEqual(expected, find_segtree_interval(self.segtree_intervals, rect_interval))
+
+
+class TestPart2(unittest.TestCase):
+    def setUp(self):
+        self.claims = {1: Claim(1, 1, 3, 1 + 4, 3 + 4),
+                       2: Claim(2, 3, 1, 3 + 4, 1 + 4),
+                       3: Claim(3, 5, 5, 5 + 2, 5 + 2)}
+        self.expected_unique_claim = 3
+
+    def test_intersect(self):
+        # Each claim should intersect itself
+        for claim in self.claims.values():
+            self.assertTrue(claim.intersects(claim))
+
+        # Claim 1 should intersect 2 but not 3
+        self.assertTrue(self.claims[1].intersects(self.claims[2]))
+        self.assertFalse(self.claims[1].intersects(self.claims[3]))
+
+        # Claim 2 should intersect 1 but not 3
+        self.assertTrue(self.claims[2].intersects(self.claims[1]))
+        self.assertFalse(self.claims[2].intersects(self.claims[3]))
+
+        # Claim 3 should not intersect either other one
+        self.assertFalse(self.claims[3].intersects(self.claims[1]))
+        self.assertFalse(self.claims[3].intersects(self.claims[2]))
+
+    def test_claim_finder(self):
+        self.assertEqual(self.expected_unique_claim, find_non_overlapping_claim(self.claims))
 
 
 if __name__ == '__main__':

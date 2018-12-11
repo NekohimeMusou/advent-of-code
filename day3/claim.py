@@ -9,6 +9,9 @@ class Claim:
 
         self.rect = Rect(x1, y1, x2, y2)
 
+    def intersects(self, other):
+        return self.rect.intersects(other.rect)
+
     regex = re.compile(r"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)")
 
     @classmethod
