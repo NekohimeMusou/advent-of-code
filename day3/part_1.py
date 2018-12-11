@@ -1,4 +1,8 @@
+from itertools import repeat
+
 from day3.claim import Claim
+from day3.claim_tree_node import ClaimTreeNode
+from tools.segtree import SegmentTree
 
 INPUT_PATH = "input.txt"
 
@@ -50,6 +54,8 @@ def get_max_x_value(claim_list):
 
 def find_elementary_intervals(interval_list, y_interval):
     total = 0
+    start = 0
+    end = 0
 
     for i, length in enumerate(interval_list):
         total += length
@@ -65,6 +71,24 @@ def find_elementary_intervals(interval_list, y_interval):
             break
 
     return start, end
+
+
+def generate_sweep_events(claim_list):
+    sweep_events = [((c.rect.x1, c.rect.y1, c.rect.y2, 1),
+                     (c.rect.x2, c.rect.y1, c.rect.y2, -1)) for c in claim_list]
+    sweep_events = [evt for pair in sweep_events for evt in pair]
+
+    return {key: [(y1, y2, delta) for (x, y1, y2, delta) in sweep_events if x == key] for key, _ in sweep_events}
+
+
+def calculate_overlap(intervals, events):
+    segtree = SegmentTree([zip(repeat(0), intervals)], ClaimTreeNode)
+    total_score = 0
+
+    for x, event_list in sorted(events.items()):
+        pass
+
+    return None
 
 
 if __name__ == '__main__':
