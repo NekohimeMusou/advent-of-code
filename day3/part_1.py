@@ -29,25 +29,24 @@ def calc_elementary_y_intervals(claims):
     Basically, just get an ordered list of all the unique y-coords, then calculate
     the lengths of the intervals between them.
 
-    For the sample data, this should return (1, 2, 2, 2, 1)
+    For the sample data, this should return (1, 2, 2, 2)
 
     Params:
 
     claims - Iterable containing Claim objects to process"""
-    # TODO: I think I can make this a bit simpler
-    # Get the union of the sets of top and bottom y-coordinates and the set containing the origin
-    unique_coords = sorted(list({c.rect.y1 for c in claims} | {c.rect.y2 for c in claims} | {0}))
+    # Get the union of the sets of top and bottom y-coordinates
+    unique_coords = {c.rect.y1 for c in claims} | {c.rect.y2 for c in claims}
 
-    # If there'd be an open interval at the end, close it
-    if len(unique_coords) % 2:
-        unique_coords.append(max(unique_coords)+1)
+    # We already know 0 is the origin so throw it out if it's there
+    unique_coords.discard(0)
+
+    # Turn the set into a sorted list
+    unique_coords = sorted(list(unique_coords))
 
     # Subtract the previous item in the list from the current one to get the interval
     # between them.
     intervals,  prev = [], 0
     for i in unique_coords:
-        if i == 0:
-            continue
         intervals.append(i-prev)
         prev = i
 
@@ -136,7 +135,7 @@ def calculate_overlap(intervals, events):
     Params:
 
     intervals - The elementary y-intervals for this problem
-    events - The event list """
+    events - The event list. See generate_sweep_events"""
     # Initialize the segtree with values set to 0
     segtree = SegmentTree(list(zip(repeat(0), intervals)), ClaimTreeNode)
     total_score = 0

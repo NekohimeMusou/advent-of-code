@@ -21,7 +21,9 @@ class TestPart1(unittest.TestCase):
                              3: [(1, 2, 1)],
                              5: [(2, 3, -1), (3, 3, 1)],
                              7: [(1, 2, -1), (3, 3, -1)]}
-        self.segtree_intervals = (1, 2, 2, 2, 1)
+        # The last segment was always blank. Changing this from (1, 2, 2, 2, 1) and removing
+        # the code that added the last interval, all unit tests still pass
+        self.segtree_intervals = (1, 2, 2, 2)
         self.rectangle_y_intervals = (((3, 7), (2, 3)),
                                       ((1, 5), (1, 2)),
                                       ((5, 7), (3, 3)))
@@ -71,7 +73,7 @@ class TestPart1(unittest.TestCase):
 
             self.assertEqual(expected_result, segtree.get_score())
 
-    def test_y_intervals(self):
+    def test_elementary_y_intervals(self):
         self.assertEqual(self.segtree_intervals, calc_elementary_y_intervals(self.claims))
 
     def test_sweep_events(self):
