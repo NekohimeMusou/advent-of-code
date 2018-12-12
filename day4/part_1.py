@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import intervaltree
 
 from day4.common import get_input
 from day4.events import EventType, ScheduleEvent
@@ -28,7 +29,7 @@ def process_events(lines):
 
         if id_match:
             guard_id = id_match.group(1)
-            guard_ids.add(guard_id)
+            guard_ids.add(int(guard_id))
 
         if event_description == 'falls asleep':
             event_type = EventType.SLEEP
@@ -38,35 +39,35 @@ def process_events(lines):
             event_type = EventType.SHIFT_BEGIN
 
         events.append(ScheduleEvent(datetime(int(year), int(month), int(day), hour=int(hour), minute=int(minute)),
-                                    guard_id, event_type))
+                                    int(guard_id), event_type))
 
-    return tuple(sorted(guard_ids, key=int)), events
+    return tuple(sorted(guard_ids)), events
 
 
 def calc_highest_total_sleep_id(sleep_per_guard):
     return max(sleep_per_guard, key=sleep_per_guard.get)
 
 
-def total_sleep_per_guard(guard_ids, events):
+def nap_intervals_per_guard(guard_ids, events):
     # Put the events into a dictionary keyed by guard ID and sorted by timestamp
     # Also get rid of the SHIFT_BEGIN events since we don't need them
     events = {g: sorted([e for e in events if e.guard_id == g and e.type is not EventType.SHIFT_BEGIN],
                         key=lambda x: x.timestamp) for g in guard_ids}
 
-    sleep_per_guard = {}
+    intervals_per_guard = {}
 
     for guard_id, event_list in events.items():
-        # See https://docs.python.org/3/library/functions.html#zip
-        total_minutes = 0
+        nap_list = []
         for first, second in zip(*[iter(event_list)]*2):
-            # Calculate the time delta
-            delta = second.timestamp - first.timestamp
-            # Get the change in minutes
-            total_minutes += delta.seconds / 60
+            nap_list.append((first.timestamp.minute, second.timestamp.minute))
 
-        sleep_per_guard[guard_id] = total_minutes
+        intervals_per_guard[guard_id] = tuple(nap_list)
 
-    return sleep_per_guard
+    return intervals_per_guard
+
+
+def total_sleep_per_guard(naps_per_guard):
+    pass
 
 
 if __name__ == '__main__':
