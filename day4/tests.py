@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 
 from day4.events import EventType, ScheduleEvent
-from day4.part_1 import process_events, total_sleep_per_guard, calc_highest_total_sleep_id, nap_intervals_per_guard
+from day4.part_1 import process_events, calc_highest_total_sleep_id, nap_intervals_per_guard, calc_sleepiest_minute
 
 
 class TestPart1(unittest.TestCase):
@@ -44,9 +44,7 @@ class TestPart1(unittest.TestCase):
                              ScheduleEvent(datetime(year=1518, month=11, day=5, hour=0, minute=45), 99, EventType.SLEEP),
                              ScheduleEvent(datetime(year=1518, month=11, day=5, hour=0, minute=55), 99, EventType.WAKE)]
 
-        cls.guard_ids = (10, 99)
-
-        cls.total_minutes_by_guard = {10: 50, 99: 30}
+        cls.guard_ids = {10, 99}
 
         cls.nap_intervals_by_guard = {10: ((5, 25), (30, 55), (24, 29)),
                                       99: ((40, 50), (36, 46), (45, 55))}
@@ -65,12 +63,11 @@ class TestPart1(unittest.TestCase):
 
         self.assertEqual(self.guard_ids, guard_ids)
 
-    @unittest.expectedFailure
-    def test_sleep_totals(self):
-        self.assertEqual(self.total_minutes_by_guard, total_sleep_per_guard(self.nap_intervals_by_guard))
-
     def test_nap_intervals(self):
         self.assertEqual(self.nap_intervals_by_guard, nap_intervals_per_guard(self.guard_ids, self.sample_events))
 
     def test_highest_total_slept(self):
-        self.assertEqual(self.highest_total_sleep_id, calc_highest_total_sleep_id(self.total_minutes_by_guard))
+        self.assertEqual(self.highest_total_sleep_id, calc_highest_total_sleep_id(self.nap_intervals_by_guard))
+
+    def test_sleepiest_minute(self):
+        self.assertEqual(self.max_sleep_minute, calc_sleepiest_minute(self.nap_intervals_by_guard[10]))
