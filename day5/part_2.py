@@ -10,6 +10,4 @@ def main():
 
 
 if __name__ == '__main__':
-    import timeit
-    print(timeit.timeit('main()', globals=globals(), number=10) / 10)
     main()
